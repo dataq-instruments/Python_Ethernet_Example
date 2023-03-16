@@ -7,5 +7,6 @@ An Ethernet python example contributed by our customer
 4) Press 'x' on your keyboard to exit the program
 
 detect_device_ethernet.py only perform 1) for easy reading
+
 data_di4370_ethernet.py will do all above
 
