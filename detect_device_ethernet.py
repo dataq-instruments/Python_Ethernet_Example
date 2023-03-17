@@ -87,11 +87,8 @@ class DataQDI4370Ethernet:
                 print("   " + message + ": " + decoded_message[message])
 
 
-
 # Demonstration of how to use this class if it is run as main
 if __name__ == "__main__":
-    import logging
-    from logging.handlers import TimedRotatingFileHandler
 
     dataq = DataQDI4370Ethernet()
 
