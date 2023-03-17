@@ -21,7 +21,6 @@ class DataQDI4370Ethernet:
     # 1234 (programmable)  PC's default status/data receiving port. Programmable via the PORT command.
 
     def __init__(self, hardware_dict=None, stripchart_setup_dict=None, ip_address='0.0.0.0'):
-        self.ip_address = ip_address
         self.socket_buffer_size = 2048
 
         # Open socket for sending broadcast and another to receive our responses
@@ -32,18 +31,12 @@ class DataQDI4370Ethernet:
         IPAddr=socket.gethostbyname(hostname)
         
         print ("PC's IP is ", IPAddr)
-        #self.disc_sock.bind(('',1235))       # DataQ device's discovery receiving port, from documentation
         self.disc_sock.bind((IPAddr,1235))       # DataQ device's discovery receiving port, from documentation
         print ("Done binding!")
 
         # socket for receiving
         self.rec_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.rec_sock.bind((self.ip_address,1234))  # Have to make sure this port is open --> 'sudo ufw allow 1234/udp'
         self.rec_sock.bind((IPAddr,1234))  # Have to make sure this port is open --> 'sudo ufw allow 1234/udp'
-
-        # Cumulative counts for messages received from units
-        self.cumulative_count = {}
-
 
 
     # Do a UDP broadcast to our local network to see what networked DataQ devices we have
