@@ -46,26 +46,6 @@ class DataQDI4370Ethernet:
 
 
 
-    # Reads messages from unit based on response type and decoces into a list of messages
-    def read_messages(self, print_data=False, data_type="DQResponse", timeout=3, expected_count=None,decode=True):
-        self.rec_sock.settimeout(timeout)          # Set timeout, will break out of our try below
-
-        # Read messages here
-        messages = []
-        while True:
-            try:
-                data, addr = self.rec_sock.recvfrom(self.socket_buffer_size)
-                messages.append([addr,data])
-                if expected_count:
-                    if len(messages) >= expected_count:
-                        break 
-            except:
-                break   # Tiemout has occurred
-
-
-            return messages
-
-
     # Do a UDP broadcast to our local network to see what networked DataQ devices we have
     def do_udp_discovery(self):
         msg = b'dataq_instruments'
