@@ -24,16 +24,6 @@ class DataQDI4370Ethernet:
         self.ip_address = ip_address
         self.socket_buffer_size = 2048
 
-        self.hardware_dict = hardware_dict
-        self.stripchart_setup_dict = stripchart_setup_dict
-
-        # Parse our hardware yaml file and see which ones we're interested in
-        self.strip_charts = [[hardware,hardware_dict[hardware]] for hardware in hardware_dict]
-        #for chart in self.strip_charts :
-        #    print("Found DataQ DAQ in config %s expected on IP %s" % (chart[0], chart[1]['ip_address']))
-
-        self.new_group_id = random.randint(1,9)  # Spec recommends setting this randomly
-
         # Open socket for sending broadcast and another to receive our responses
         self.disc_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)  # UDP
         self.disc_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -53,29 +43,8 @@ class DataQDI4370Ethernet:
 
         # Cumulative counts for messages received from units
         self.cumulative_count = {}
-        for hardware in hardware_dict:
-            self.cumulative_count[hardware_dict[hardware]['ip_address']] = 0
 
-    # GroupID = 0 indicates and idle (available) device
-    # The only command the DataQ will respond to when GroupID is 0 is the "connect" command (GroupID = 10)?
-    # Create packed command per the Protocol Document, page # 9
-    def pack_command(self, groupid=1,command='Connect',arg0=0,arg1=0,arg2=0,payload=''):
-        ethernet_commands = {'SyncStart': 1,        # HAVE to use this to 'start' with Ethernet devices
-                             'SlaveIp': 5,
-                             'SyncStop': 6,
-                             'Connect': 10,         # These are 'Ethernet-specific' command values
-                             'Disconnect': 11,      
-                             'KeepAlive': 12,
-                             'SetWdqHeader': 21,    # For shared commands , the command goes in the 'Payload'
-                             'Shared': 13,}   # All Shared (both USB and Ethernet) protocol commands have a value of 13
-        # '@' means 'native' Byte Order, Size, and Alignment, 'I' is 'unsigned int', 'c' is 'char'
-        # 0x31415926 is 'DQCommand' --> This is fixed for all commands to DataQ unit
-        # 'DQCommand' is fixed length, so we can use pack directly
-        payload = payload + '\0' # A null-terminated ASCII string or binary image as needed by the specific command
-        payload = bytes(payload.encode('ascii'))
-        pack_format = "@IIIIII%ds"%len(payload)
-        packed = struct.pack(pack_format,0x31415926,groupid,ethernet_commands[command],arg0,arg1,arg2,payload)
-        return packed
+
 
     # Reads messages from unit based on response type and decoces into a list of messages
     def read_messages(self, print_data=False, data_type="DQResponse", timeout=3, expected_count=None,decode=True):
@@ -249,17 +218,6 @@ class DataQDI4370Ethernet:
             for message in decoded_message:
                 print("   " + message + ": " + decoded_message[message])
 
-        # Verify we find all expected DataQ devices on the local network
-        all_found = True
-        for chart in self.strip_charts:
-            ip_found = False
-            for message in decoded_messages:
-                if chart[1]['ip_address'] == message['IP']:
-                    ip_found = True
-            if not ip_found:
-                all_found = False
-
-
 
 
 # Demonstration of how to use this class if it is run as main
@@ -267,29 +225,8 @@ if __name__ == "__main__":
     import logging
     from logging.handlers import TimedRotatingFileHandler
 
-    # Add command line arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-log", "--log-name", required=False, default='example_log/example.log', type=str, 
-                    help="log file to log to")
-    args = vars(ap.parse_args())
+    dataq = DataQDI4370Ethernet()
 
-    # This maps the IP address of the units to a name used below to configure individual channels
-    hardware_info = {'Strip_Chart_1': {'ip_address': '192.168.0.80',}}
-
-    # This specifies which channels to setup and how to set them up
-    stripcharts_info = {'Example_Channel_Name_01': {'channel': 6, 'strip_chart': 'Strip_Chart_2', 
-                                                    'daq_scale': 1, 'value_scale': 1000}}
-
-    # Initialize the class
-    #print ("stripcharts_info=", stripcharts_info)
-    dataq = DataQDI4370Ethernet(hardware_dict=hardware_info,
-                                 stripchart_setup_dict=stripcharts_info)
-
-
-    # IF ADC is running, attempt to stop here, wait for disconnect to complete
-    time.sleep(2)
-
-    dataq.read_messages()  # Clear out any messages
     dataq.do_udp_discovery()
 
 
