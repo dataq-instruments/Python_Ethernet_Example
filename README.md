@@ -1,5 +1,5 @@
-# Python_Ethernet_Example_4730
-An Ethernet python example contributed by our customer. It was designed to work with DI-4730 but with minor modification, it can work with 4108, 4208 and 4718B Ethernet
+# Python_Ethernet_Example
+An Ethernet python example contributed by our customer. It was originally designed to work with DI-4730 but with minor modification, it can work with 4108, 4208 and 4718B Ethernet
 
 1) Searches for all DATAQ ethernet devices on the network
 2) Connect to the IP address(es) listed in hardware_info of main
